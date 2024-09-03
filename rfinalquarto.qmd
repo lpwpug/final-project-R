@@ -47,7 +47,7 @@ tblone <- tbl_summary(
 	ObesityDataSet,
 	by = NObeyesdad,
 	include = c(family_history_with_overweight, FAVC))
-print(tblone)
+tblone
 
 ```
 
@@ -92,11 +92,9 @@ regressiontable <- tbl_uvregression(
 	method.args = list(family = binomial()),
 	exponentiate = TRUE
 )
+regressiontable
 ```
 
-```{r}
-print(regressiontable)
-```
 
 ## I will then create a function to find the standard deviation and check to make sure my new function works.
 
