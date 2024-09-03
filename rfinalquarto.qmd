@@ -1,0 +1,115 @@
+---
+title: "R Final"
+author: "Lilly Walker"
+format: html
+---
+
+# Obesity Levels Data Set
+
+Obesity is a global health problem with serious consequences. The prevalence of obesity is increasing steadily, and therefore, new research is needed that examines the influencing factors of obesity and how to predict the occurrence of the condition according to these factors.
+
+This data set includes data for the estimation of obesity levels in individuals from the countries of Mexico, Peru and Colombia, based on their eating habits and physical conditions. The class variable NObesity (Obesity Level) allows classification of the data using the values of Insufficient Weight, Normal Weight, Overweight Level I, Overweight Level II, Obesity Type I, Obesity Type II and Obesity Type III.
+
+77% of the data was generated synthetically, while 23% of the data was collected directly from users through a web platform. There are 17 variables and 2111 observations. The link to the data can be found here, on Kaggle: <https://www.kaggle.com/datasets/fatemehmehrparvar/obesity-levels?resource=download>.
+
+My analyses will focus mainly on the following variables:
+
+family_history_with_overweight: Feature, Binary, " Has a family member suffered or suffers from overweight? "
+
+FAVC : Feature, Binary, " Do you eat high caloric food frequently? "
+
+FAF: Feature, Continuous, " How often do you have physical activity? "
+
+SMOKE : Feature, Binary, " Do you smoke? "
+
+SCC: Feature, Binary, " Do you monitor the calories you eat daily? "
+
+NObeyesdad : Target, Categorical, "Obesity level"
+
+## First, I will load necessary packages and data set(s).
+
+```{r}
+library(tidyverse)
+library(gtsummary)
+library(knitr)
+library(dplyr)
+library(readxl)
+ObesityDataSet <- read_excel("ObesityDataSet.xlsx")
+here::here("ObesityDataSet.xlsx")
+```
+
+## Then, I will run tbl_summary to find descriptive statistics.
+
+```{r}
+#| label: tbl-one
+#| tbl-cap: "Descriptive statistics showing family history with overweight and the frequency of eating high caloric food across different weight categories."
+tblone <- tbl_summary(
+	ObesityDataSet,
+	by = NObeyesdad,
+	include = c(family_history_with_overweight, FAVC))
+print(tblone)
+
+```
+
+```{r}
+obesitytype2 <- inline_text(tblone, variable = "family_history_with_overweight", 
+                         column = "Obesity_Type_II")
+obesitytype3 <- inline_text(tblone, variable = "family_history_with_overweight", 
+                         column = "Obesity_Type_III")
+```
+
+As @tbl-one shows, it seems that having a family member with a history of being overweight may have an association with weight level. All individuals with obesity types II (`r obesitytype2`) and III (`r obesitytype3`) had a family member who struggled with being overweight.
+
+## Below is a histogram of the variable FAF.
+
+```{r}
+#| label: fig-hist
+#| fig-cap: "Histogram showing how often individuals have physical activity."
+hist(ObesityDataSet$FAF)
+```
+
+@fig-hist demonstrates that the majority of individuals in this data set did not engage in physical activity often.
+
+## Next, I will create a logistic regression with binary variables.
+
+```{r}
+ObesityDataSet$family_history_with_overweight <- ifelse(ObesityDataSet$family_history_with_overweight == "yes", 1, 0)
+ObesityDataSet$SMOKE <- ifelse(ObesityDataSet$SMOKE == "yes", 1, 0)
+ObesityDataSet$SCC <- ifelse(ObesityDataSet$SCC == "yes", 1, 0)
+ObesityDataSet$FAVC <- ifelse(ObesityDataSet$FAVC == "yes", 1, 0)
+
+ObesityDataSet$Gender <- as.factor(ObesityDataSet$Gender)
+
+
+```
+
+```{r}
+regressiontable <- tbl_uvregression(
+	data = ObesityDataSet,
+	y = "Gender",
+	include = c(FAVC, family_history_with_overweight, SMOKE, SCC),
+	method = glm,
+	method.args = list(family = binomial()),
+	exponentiate = TRUE
+)
+```
+
+```{r}
+print(regressiontable)
+```
+
+## I will then create a function to find the standard deviation and check to make sure my new function works.
+
+```{r}
+stddev <- function(x) {
+	mean <- mean(x)
+	squared_deviations <- (x - mean)^2
+	sum_squared_deviations <- sum(squared_deviations)
+  variance <- sum_squared_deviations / (length(x) - 1)
+	stddev_val <- sqrt(variance)
+	return(stddev_val)
+}
+
+stddev(ObesityDataSet$Weight)
+sd(ObesityDataSet$Weight)
+```
