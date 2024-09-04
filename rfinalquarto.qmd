@@ -26,6 +26,11 @@ SCC: Feature, Binary, " Do you monitor the calories you eat daily? "
 
 NObeyesdad : Target, Categorical, "Obesity level"
 
+```{r}
+here::i_am("rfinalquarto.qmd")
+```
+
+
 ## First, I will load necessary packages and data set(s).
 
 ```{r}
